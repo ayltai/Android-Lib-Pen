@@ -1,0 +1,17 @@
+.classpath
+.project
+.settings/
+
+*.class
+*.dex
+
+*.apk
+*.ap_
+
+bin/
+gen/
+
+proguard/
+proguard-project.txt
+
+target/

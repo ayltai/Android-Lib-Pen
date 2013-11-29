@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="pen_container" />
+    <item type="id" name="pen_canvas" />
+    <item type="id" name="pen_buttons" />
+    <item type="id" name="pen_pen_button" />
+    <item type="id" name="pen_eraser_button" />
+    <item type="id" name="pen_undo_button" />
+    <item type="id" name="pen_redo_button" />
+</resources>

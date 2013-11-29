@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="message_non_samsung_device">This device is not a Samsung device.</string>
+    <string name="message_spen_not_found">This device does not support S-Pen</string>
+    <string name="message_spen_library_not_found">You need to install additional S-Pen software to use this application. You will be taken to the installation screen. Restart this application after the software has been installed.</string>
+    <string name="message_spen_library_update_required">You need to update your S-Pen software to use this application. You will be taken to the installation screen. Restart this application after the software has been updated.</string>
+    <string name="message_spen_not_initialized">Cannot initialize S-Pen</string>
+    <string name="message_finger_only">This device does not support S-Pen.\nYou can draw strokes with your finger.</string>
+    <string name="message_update">Update notification</string>
+</resources>

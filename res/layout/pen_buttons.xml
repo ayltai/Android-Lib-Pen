@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@id/pen_buttons"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+    <android.lib.pen.PenButton
+        android:id="@id/pen_pen_button"
+        android:drawableTop="@drawable/selector_pen"
+        style="@style/PenEraserStyle" />
+    <android.lib.pen.PenButton
+        android:id="@id/pen_eraser_button"
+        android:drawableTop="@drawable/selector_eraser"
+        style="@style/PenEraserStyle" />
+    <ImageButton
+        android:id="@id/pen_undo_button"
+        android:src="@drawable/selector_undo"
+        style="@style/UndoRedoStyle" />
+    <ImageButton
+        android:id="@id/pen_redo_button"
+        android:src="@drawable/selector_redo"
+        style="@style/UndoRedoStyle" />
+</LinearLayout>
