@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style
-        name="PenEraserStyle"
+        name="ToolStyle"
         parent="@android:style/Widget.Button.Toggle">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
+        <item name="android:layout_width">64dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:alpha">0.75</item>
         <item name="android:textOn"></item>
         <item name="android:textOff"></item>
         <item name="android:textSize">0dp</item>
         <item name="android:checked">false</item>
-    </style>
-    <style
-        name="UndoRedoStyle"
-        parent="@android:style/Widget.ImageButton">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:scaleType">centerInside</item>
     </style>
 </resources>

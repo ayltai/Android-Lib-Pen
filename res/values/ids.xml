@@ -7,4 +7,5 @@
     <item type="id" name="pen_eraser_button" />
     <item type="id" name="pen_undo_button" />
     <item type="id" name="pen_redo_button" />
+    <item type="id" name="pen_zoom_button" />
 </resources>

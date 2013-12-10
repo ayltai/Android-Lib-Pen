@@ -15,7 +15,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -64,6 +64,11 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      * The redo button used to redo in history.
      */
     public static final int BUTTON_REDO = 3;
+
+    /**
+     * The zoom button used to zoom the canvas in 2x.
+     */
+    public static final int BUTTON_ZOOM = 4;
 
     /**
      * Positions a background image at the center of the {@link SpenSurfaceView canvas}.
@@ -124,7 +129,10 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
 
     private static final int RESPONSE_TIME = 500;
 
+    private static final float ZOOM_RATIO = 1.5f;
+
     private final Activity activity;
+    private final View     rootLayout;
 
     private SpenSurfaceView surfaceView;
     private SpenNoteDoc     noteDoc;
@@ -134,8 +142,9 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
 
     private ToggleButton penButton;
     private ToggleButton eraserButton;
-    private ImageButton  undoButton;
-    private ImageButton  redoButton;
+    private ToggleButton undoButton;
+    private ToggleButton redoButton;
+    private ToggleButton zoomButton;
 
     private boolean penEnabled;
     private boolean penSettingEnabled    = true;
@@ -144,6 +153,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     private int     currentPage;
     private int     canvasWidth;
     private boolean dirty;
+    private boolean isZoomed;
 
     /**
      * Determines whether a SPD file is password protected.
@@ -184,18 +194,21 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      * and settings ({@link SpenSettingPenLayout pen setting} and {@link SpenSettingEraserLayout eraser setting}.
      * @param activity the {@link Activity} that hosts a {@link RelativeLayout}, where a {@link SpenSurfaceView canvas}
      * will be created.
+     * @param rootLayout the {@link View} that contains {@link R.id.pen_container} and {@link R.id.pen_canvas}.
      */
-    public PenService(final Activity activity) {
-        this.activity = activity;
+    public PenService(final Activity activity, final View rootLayout) {
+        this.activity   = activity;
+        this.rootLayout = rootLayout;
 
-        final ViewGroup      penButtons = (ViewGroup)activity.findViewById(R.id.pen_buttons);
-        final RelativeLayout canvas     = (RelativeLayout)activity.findViewById(R.id.pen_canvas);
+        final ViewGroup      penButtons = (ViewGroup)rootLayout.findViewById(R.id.pen_buttons);
+        final RelativeLayout canvas     = (RelativeLayout)rootLayout.findViewById(R.id.pen_canvas);
 
         if (penButtons != null) {
             this.penButton    = (ToggleButton)penButtons.findViewById(R.id.pen_pen_button);
             this.eraserButton = (ToggleButton)penButtons.findViewById(R.id.pen_eraser_button);
-            this.undoButton   = (ImageButton)penButtons.findViewById(R.id.pen_undo_button);
-            this.redoButton   = (ImageButton)penButtons.findViewById(R.id.pen_redo_button);
+            this.undoButton   = (ToggleButton)penButtons.findViewById(R.id.pen_undo_button);
+            this.redoButton   = (ToggleButton)penButtons.findViewById(R.id.pen_redo_button);
+            this.zoomButton   = (ToggleButton)penButtons.findViewById(R.id.pen_zoom_button);
         }
 
         this.penSetting    = new SpenSettingPenLayout(activity, PenService.NULL, canvas);
@@ -254,6 +267,8 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             this.undo();
         } else if (id == R.id.pen_redo_button) {
             this.redo();
+        } else if (id == R.id.pen_zoom_button) {
+            this.zoom();
         }
     }
 
@@ -431,16 +446,14 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      * @param visibility one of {@link View#VISIBLE}, {@link View#INVISIBLE} and {@link View#GONE}.
      */
     public void setButtonVisibility(final int button, final int visibility) {
-        final View view;
+        View view = null;
 
         switch (button) {
             case BUTTON_PEN:    view = this.penButton;    break;
             case BUTTON_ERASER: view = this.eraserButton; break;
             case BUTTON_UNDO:   view = this.undoButton;   break;
             case BUTTON_REDO:   view = this.redoButton;   break;
-
-            default:
-                throw new IllegalArgumentException();
+            case BUTTON_ZOOM:   view = this.zoomButton;   break;
         }
 
         if (view != null) {
@@ -463,37 +476,47 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      * @param drawable a drawable to set.
      */
     public void setButtonDrawable(final int button, final Drawable drawable) {
+        ToggleButton view = null;
+
         switch (button) {
             case BUTTON_PEN:
                 if (this.penButton != null) {
-                    this.penButton.setCompoundDrawables(null, drawable, null, null);
+                    view = this.penButton;
                 }
 
                 break;
 
             case BUTTON_ERASER:
                 if (this.eraserButton != null) {
-                    this.eraserButton.setCompoundDrawables(null, drawable, null, null);
+                    view = this.eraserButton;
                 }
 
                 break;
 
             case BUTTON_UNDO:
                 if (this.undoButton != null) {
-                    this.undoButton.setImageDrawable(drawable);
+                    view = this.undoButton;
                 }
 
                 break;
 
             case BUTTON_REDO:
                 if (this.redoButton != null) {
-                    this.redoButton.setImageDrawable(drawable);
+                    view = this.redoButton;
                 }
 
                 break;
 
-            default:
-                throw new IllegalArgumentException();
+            case BUTTON_ZOOM:
+                if (this.zoomButton != null) {
+                    view = this.zoomButton;
+                }
+
+                break;
+        }
+
+        if (view != null) {
+            view.setCompoundDrawables(null, drawable, null, null);
         }
     }
 
@@ -596,45 +619,44 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      * @param button one of {@link #BUTTON_PEN} {@link #BUTTON_ERASER}, {@link #BUTTON_UNDO} and {@link #BUTTON_REDO}.
      */
     public void selectButton(final int button) {
-        if (this.surfaceView == null) {
-            throw new IllegalStateException();
-        }
-
-        this.penSetting.setVisibility(View.GONE);
-        this.eraserSetting.setVisibility(View.GONE);
-
-        switch (button) {
-            case BUTTON_PEN:
-                if (this.penButton != null) {
-                    this.surfaceView.setToolTypeAction(this.toolType, SpenSettingViewInterface.ACTION_STROKE);
-
-                    if (this.eraserButton != null) {
-                        this.eraserButton.setChecked(false);
-                    }
-
-                    if (!this.penButton.isChecked()) {
-                        this.penButton.setChecked(true);
-                    }
-
-                    this.onPenSettingClick();
-                }
-
-                break;
-
-            case BUTTON_ERASER:
-                if (this.eraserButton != null) {
+        if (this.surfaceView != null) {
+            switch (button) {
+                case BUTTON_PEN:
                     if (this.penButton != null) {
-                        this.penButton.setChecked(false);
+                        this.eraserSetting.setVisibility(View.GONE);
+
+                        this.surfaceView.setToolTypeAction(this.toolType, SpenSettingViewInterface.ACTION_STROKE);
+
+                        if (this.eraserButton != null) {
+                            this.eraserButton.setChecked(false);
+                        }
+
+                        if (!this.penButton.isChecked()) {
+                            this.penButton.setChecked(true);
+                        }
+
+                        this.onPenSettingClick();
                     }
 
-                    if (!this.eraserButton.isChecked()) {
-                        this.eraserButton.setChecked(true);
+                    break;
+
+                case BUTTON_ERASER:
+                    if (this.eraserButton != null) {
+                        this.penSetting.setVisibility(View.GONE);
+
+                        if (this.penButton != null) {
+                            this.penButton.setChecked(false);
+                        }
+
+                        if (!this.eraserButton.isChecked()) {
+                            this.eraserButton.setChecked(true);
+                        }
+
+                        this.onEraserSettingClick();
                     }
 
-                    this.onEraserSettingClick();
-                }
-
-                break;
+                    break;
+            }
         }
     }
 
@@ -756,6 +778,14 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
                 this.surfaceView.updateRedo(pageDoc.redo());
             }
         }
+    }
+
+    private void zoom() {
+        this.isZoomed = !this.isZoomed;
+
+        this.setZoomEnabled(this.isZoomed, PenService.ZOOM_RATIO);
+
+        this.zoomButton.setChecked(!this.zoomButton.isChecked());
     }
 
     /**
@@ -990,7 +1020,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     public void init(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode, final int penColor, final int penSize, final int eraserSize) {
         this.initSpen();
 
-        final ViewGroup container = (ViewGroup)this.activity.findViewById(R.id.pen_container);
+        final ViewGroup container = (ViewGroup)this.rootLayout.findViewById(R.id.pen_container);
 
         if (this.penSettingEnabled) {
             container.addView(this.penSetting);
@@ -1004,17 +1034,43 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         this.initPenInfo(penColor, penSize);
         this.initEraserInfo(eraserSize);
 
-        this.surfaceView.setColorPickerListener(this);
-        this.eraserSetting.setEraserListener(this);
-        this.penButton.setOnClickListener(this);
-        this.eraserButton.setOnClickListener(this);
-        this.undoButton.setOnClickListener(this);
-        this.redoButton.setOnClickListener(this);
+        if (this.surfaceView != null) {
+            this.surfaceView.setColorPickerListener(this);
+        }
+
+        if (this.eraserSetting != null) {
+            this.eraserSetting.setEraserListener(this);
+        }
+
+        if (this.penButton != null) {
+            this.penButton.setOnClickListener(this);
+        }
+
+        if (this.eraserButton != null) {
+            this.eraserButton.setOnClickListener(this);
+        }
+
+        if (this.undoButton != null) {
+            this.undoButton.setOnClickListener(this);
+        }
+
+        if (this.redoButton != null) {
+            this.redoButton.setOnClickListener(this);
+        }
+
+        if (this.zoomButton != null) {
+            this.zoomButton.setOnClickListener(this);
+        }
 
         final SpenPageDoc pageDoc = this.noteDoc.getPage(this.currentPage);
 
-        this.undoButton.setEnabled(pageDoc.isUndoable());
-        this.redoButton.setEnabled(pageDoc.isRedoable());
+        if (this.undoButton != null) {
+            this.undoButton.setEnabled(pageDoc.isUndoable());
+        }
+
+        if (this.redoButton != null) {
+            this.redoButton.setEnabled(pageDoc.isRedoable());
+        }
 
         pageDoc.setHistoryListener(this);
 
@@ -1038,7 +1094,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     }
 
     private void initCanvas(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode) {
-        final ViewGroup canvas = (ViewGroup)this.activity.findViewById(R.id.pen_canvas);
+        final ViewGroup canvas = (ViewGroup)this.rootLayout.findViewById(R.id.pen_canvas);
 
         this.canvasWidth = canvasWidth;
         this.surfaceView = new SpenSurfaceView(this.activity);
@@ -1131,6 +1187,13 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
                 this.penSetting.setVisibility(View.GONE);
             } else {
                 this.penSetting.setViewMode(SpenSettingPenLayout.VIEW_MODE_EXTENSION);
+
+                final View                     toolsLayout = (View)this.rootLayout.findViewById(R.id.pen_buttons).getParent();
+                final FrameLayout.LayoutParams params      = (FrameLayout.LayoutParams)this.penSetting.getLayoutParams();
+                params.leftMargin = (int)toolsLayout.getX() + this.penButton.getLeft();
+                params.topMargin  = (int)toolsLayout.getY() + this.penButton.getTop() + this.penButton.getHeight();
+
+                this.penSetting.setLayoutParams(params);
                 this.penSetting.setVisibility(View.VISIBLE);
             }
         }
@@ -1143,6 +1206,13 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
                     this.eraserSetting.setVisibility(View.GONE);
                 } else {
                     this.eraserSetting.setViewMode(SpenSettingEraserLayout.VIEW_MODE_NORMAL);
+
+                    final View                     toolsLayout = (View)this.rootLayout.findViewById(R.id.pen_buttons).getParent();
+                    final FrameLayout.LayoutParams params      = (FrameLayout.LayoutParams)this.eraserSetting.getLayoutParams();
+                    params.leftMargin = (int)toolsLayout.getX() + this.eraserButton.getLeft();
+                    params.topMargin  = (int)toolsLayout.getY() + this.eraserButton.getTop() + this.eraserButton.getHeight();
+
+                    this.eraserSetting.setLayoutParams(params);
                     this.eraserSetting.setVisibility(View.VISIBLE);
                 }
             } else {
