@@ -663,7 +663,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             final SpenPageDoc pageDoc = this.noteDoc.appendPage();
             pageDoc.setBackgroundColor(backgroundColor);
 
-            if (TextUtils.isEmpty(backgroundImagePath)) {
+            if (!TextUtils.isEmpty(backgroundImagePath)) {
                 pageDoc.setBackgroundImage(backgroundImagePath);
             }
 
@@ -689,7 +689,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             final SpenPageDoc pageDoc = this.noteDoc.insertPage(pageIndex);
             pageDoc.setBackgroundColor(backgroundColor);
 
-            if (TextUtils.isEmpty(backgroundImagePath)) {
+            if (!TextUtils.isEmpty(backgroundImagePath)) {
                 pageDoc.setBackgroundImage(backgroundImagePath);
             }
 
@@ -1061,7 +1061,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             final SpenPageDoc pageDoc = this.noteDoc.appendPage();
             pageDoc.setBackgroundColor(backgroundColor);
 
-            if (TextUtils.isEmpty(backgroundImagePath)) {
+            if (!TextUtils.isEmpty(backgroundImagePath)) {
                 pageDoc.setBackgroundImage(backgroundImagePath);
             }
 
