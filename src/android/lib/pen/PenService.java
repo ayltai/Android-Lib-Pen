@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -37,6 +38,7 @@ import com.samsung.android.sdk.pen.engine.SpenPenChangeListener;
 import com.samsung.android.sdk.pen.engine.SpenPenDetachmentListener;
 import com.samsung.android.sdk.pen.engine.SpenReplayListener;
 import com.samsung.android.sdk.pen.engine.SpenSurfaceView;
+import com.samsung.android.sdk.pen.engine.SpenTouchListener;
 import com.samsung.android.sdk.pen.engine.SpenZoomListener;
 import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
@@ -44,7 +46,7 @@ import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
 /**
  * Provides common operations for using Samsung S-Pen.
  */
-public class PenService implements View.OnClickListener, SpenColorPickerListener, SpenSettingEraserLayout.EventListener, SpenPageDoc.HistoryListener, SpenReplayListener, SpenZoomListener, SpenPenChangeListener, SpenEraserChangeListener, SpenPenDetachmentListener {
+public class PenService implements View.OnClickListener, SpenColorPickerListener, SpenSettingEraserLayout.EventListener, SpenPageDoc.HistoryListener, SpenReplayListener, SpenZoomListener, SpenPenChangeListener, SpenEraserChangeListener, SpenPenDetachmentListener, SpenTouchListener {
     /**
      * The pen button for selecting the pen tool and showing the {@link SpenSettingPenLayout pen setting}.
      */
@@ -270,6 +272,11 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         } else if (id == R.id.pen_zoom_button) {
             this.zoom();
         }
+    }
+
+    @Override
+    public boolean onTouch(final View view, final MotionEvent event) {
+        return false;
     }
 
     /**
@@ -1148,6 +1155,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         this.surfaceView.setPenChangeListener(this);
         this.surfaceView.setEraserChangeListener(this);
         this.surfaceView.setPenDetachmentListener(this);
+        this.surfaceView.setTouchListener(this);
     }
 
     private void initPenInfo(final int penColor, final int penSize) {
