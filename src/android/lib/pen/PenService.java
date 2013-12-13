@@ -68,7 +68,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     public static final int BUTTON_REDO = 3;
 
     /**
-     * The zoom button used to zoom the canvas in 2x.
+     * The zoom button used to zoom the canvas in 1.5x.
      */
     public static final int BUTTON_ZOOM = 4;
 
@@ -244,6 +244,12 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         }
 
         if (this.noteDoc != null) {
+            try {
+                this.noteDoc.discard();
+            } catch (final IOException e) {
+                Log.e(this.getClass().getName(), e.getMessage(), e);
+            }
+
             try {
                 this.noteDoc.close();
             } catch (final IOException e) {
@@ -443,6 +449,36 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
 
                 this.surfaceView.setPageDoc(this.noteDoc.getPage(this.currentPage), true);
             }
+        }
+    }
+
+    /**
+     * Sets the background color of a page.
+     * @param page the index of the page to set color to.
+     * @param color the color to set.
+     */
+    public void setBackgroundColor(final int page, final int color) {
+        if (this.surfaceView == null) {
+            throw new IllegalStateException();
+        }
+
+        if (this.noteDoc != null) {
+            this.noteDoc.getPage(page).setBackgroundColor(color);
+        }
+    }
+
+    /**
+     * Sets the background image of a page.
+     * @param page the index of the page to set color to.
+     * @param imagePath the path of an image file.
+     */
+    public void setBackgroundImage(final int page, final String imagePath) {
+        if (this.surfaceView == null) {
+            throw new IllegalStateException();
+        }
+
+        if (this.noteDoc != null) {
+            this.noteDoc.getPage(page).setBackgroundImage(imagePath);
         }
     }
 
@@ -856,10 +892,12 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      */
     public void stopReplay() {
         if (this.surfaceView == null) {
-            throw new IllegalStateException();
+            //throw new IllegalStateException();
+        } else {
+            if (this.surfaceView.getReplayState() == SpenSurfaceView.REPLAY_STATE_PLAYING) {
+                this.surfaceView.stopReplay();
+            }
         }
-
-        this.surfaceView.stopReplay();
     }
 
     /**
@@ -953,17 +991,18 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     /**
      * Loads a SPD file into the current {@link SpenNoteDoc document}.
      * @param path the absolute path of a SPD file to load.
+     * @param writable <code>true</code> if the SPD file should be writable; otherwise, <code>false</code>.
      * @throws IOException thrown if the specified <code>path</code> is not found or a cache directory cannot be generated.
      * @throws SpenUnsupportedTypeException thrown if the file to load is not in SPD format.
      * @throws SpenUnsupportedVersionException thrown if the Pen package installed on the device is incompatible.
      * @throws SpenInvalidPasswordException thrown if the file is password protected.
      */
-    public void load(final String path) throws SpenInvalidPasswordException, SpenUnsupportedTypeException, SpenUnsupportedVersionException, IOException {
+    public void load(final String path, final boolean writable) throws SpenInvalidPasswordException, SpenUnsupportedTypeException, SpenUnsupportedVersionException, IOException {
         if (this.surfaceView == null) {
             throw new IllegalStateException();
         }
 
-        final SpenNoteDoc noteDoc = new SpenNoteDoc(this.activity, path, this.canvasWidth, SpenNoteDoc.MODE_WRITABLE);
+        final SpenNoteDoc noteDoc = new SpenNoteDoc(this.activity, path, this.canvasWidth, writable ? SpenNoteDoc.MODE_WRITABLE : SpenNoteDoc.MODE_READ_ONLY);
 
         if (this.noteDoc != null) {
             this.noteDoc.close();
@@ -982,17 +1021,18 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     /**
      * Loads a SPD file into the current {@link SpenNoteDoc document}.
      * @param path the absolute path of a SPD file to load.
+     * @param writable <code>true</code> if the SPD file should be writable; otherwise, <code>false</code>.
      * @throws IOException thrown if the specified <code>path</code> is not found or a cache directory cannot be generated.
      * @throws SpenUnsupportedTypeException thrown if the file to load is not in SPD format.
      * @throws SpenUnsupportedVersionException thrown if the Pen package installed on the device is incompatible.
      * @throws SpenInvalidPasswordException thrown if the specified <code>password</code> is incorrect.
      */
-    public void load(final String path, final String password) throws SpenInvalidPasswordException, SpenUnsupportedTypeException, SpenUnsupportedVersionException, IOException {
+    public void load(final String path, final String password, final boolean writable) throws SpenInvalidPasswordException, SpenUnsupportedTypeException, SpenUnsupportedVersionException, IOException {
         if (this.surfaceView == null) {
             throw new IllegalStateException();
         }
 
-        final SpenNoteDoc noteDoc = new SpenNoteDoc(this.activity, path, password, this.canvasWidth, SpenNoteDoc.MODE_WRITABLE);
+        final SpenNoteDoc noteDoc = new SpenNoteDoc(this.activity, path, password, this.canvasWidth, writable ? SpenNoteDoc.MODE_WRITABLE : SpenNoteDoc.MODE_READ_ONLY);
 
         if (this.noteDoc != null) {
             this.noteDoc.close();
