@@ -139,8 +139,8 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     private SpenSurfaceView surfaceView;
     private SpenNoteDoc     noteDoc;
 
-    private final SpenSettingPenLayout    penSetting;
-    private final SpenSettingEraserLayout eraserSetting;
+    private SpenSettingPenLayout    penSetting;
+    private SpenSettingEraserLayout eraserSetting;
 
     private ToggleButton penButton;
     private ToggleButton eraserButton;
@@ -202,8 +202,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         this.activity   = activity;
         this.rootLayout = rootLayout;
 
-        final ViewGroup      penButtons = (ViewGroup)rootLayout.findViewById(R.id.pen_buttons);
-        final RelativeLayout canvas     = (RelativeLayout)rootLayout.findViewById(R.id.pen_canvas);
+        final ViewGroup penButtons = (ViewGroup)rootLayout.findViewById(R.id.pen_buttons);
 
         if (penButtons != null) {
             this.penButton    = (ToggleButton)penButtons.findViewById(R.id.pen_pen_button);
@@ -212,9 +211,6 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             this.redoButton   = (ToggleButton)penButtons.findViewById(R.id.pen_redo_button);
             this.zoomButton   = (ToggleButton)penButtons.findViewById(R.id.pen_zoom_button);
         }
-
-        this.penSetting    = new SpenSettingPenLayout(activity, PenService.NULL, canvas);
-        this.eraserSetting = new SpenSettingEraserLayout(activity, PenService.NULL, canvas);
     }
 
     /**
@@ -1063,81 +1059,97 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      * @param penColor the initial pen color to use.
      * @param penSize the initial pen size in pixels to use.
      * @param eraserSize the initial eraser size in pixels to use.
+     * @return <code>true</code> if Spen SDK is initialized successfully; otherwise, <code>false</code>.
      */
-    public void init(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode, final int penColor, final int penSize, final int eraserSize) {
-        this.initSpen();
+    public boolean init(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode, final int penColor, final int penSize, final int eraserSize) {
+        if (this.initSpen()) {
+            final ViewGroup      container = (ViewGroup)this.rootLayout.findViewById(R.id.pen_container);
+            final RelativeLayout canvas    = (RelativeLayout)this.rootLayout.findViewById(R.id.pen_canvas);
 
-        final ViewGroup container = (ViewGroup)this.rootLayout.findViewById(R.id.pen_container);
+            if (this.penSettingEnabled) {
+                this.penSetting = new SpenSettingPenLayout(this.activity, PenService.NULL, canvas);
 
-        if (this.penSettingEnabled) {
-            container.addView(this.penSetting);
+                container.addView(this.penSetting);
+            }
+
+            if (this.eraserSettingEnabled) {
+                this.eraserSetting = new SpenSettingEraserLayout(this.activity, PenService.NULL, canvas);
+
+                container.addView(this.eraserSetting);
+            }
+
+            this.initCanvas(canvasWidth, canvasHeight, backgroundColor, backgroundImagePath, backgroundImageMode);
+            this.initPenInfo(penColor, penSize);
+            this.initEraserInfo(eraserSize);
+
+            if (this.surfaceView != null) {
+                this.surfaceView.setColorPickerListener(this);
+            }
+
+            if (this.eraserSetting != null) {
+                this.eraserSetting.setEraserListener(this);
+            }
+
+            if (this.penButton != null) {
+                this.penButton.setOnClickListener(this);
+            }
+
+            if (this.eraserButton != null) {
+                this.eraserButton.setOnClickListener(this);
+            }
+
+            if (this.undoButton != null) {
+                this.undoButton.setOnClickListener(this);
+            }
+
+            if (this.redoButton != null) {
+                this.redoButton.setOnClickListener(this);
+            }
+
+            if (this.zoomButton != null) {
+                this.zoomButton.setOnClickListener(this);
+            }
+
+            final SpenPageDoc pageDoc = this.noteDoc.getPage(this.currentPage);
+
+            if (this.undoButton != null) {
+                this.undoButton.setEnabled(pageDoc.isUndoable());
+            }
+
+            if (this.redoButton != null) {
+                this.redoButton.setEnabled(pageDoc.isRedoable());
+            }
+
+            pageDoc.setHistoryListener(this);
+
+            this.selectButton(PenService.BUTTON_PEN);
+
+            return true;
         }
 
-        if (this.eraserSettingEnabled) {
-            container.addView(this.eraserSetting);
-        }
-
-        this.initCanvas(canvasWidth, canvasHeight, backgroundColor, backgroundImagePath, backgroundImageMode);
-        this.initPenInfo(penColor, penSize);
-        this.initEraserInfo(eraserSize);
-
-        if (this.surfaceView != null) {
-            this.surfaceView.setColorPickerListener(this);
-        }
-
-        if (this.eraserSetting != null) {
-            this.eraserSetting.setEraserListener(this);
-        }
-
-        if (this.penButton != null) {
-            this.penButton.setOnClickListener(this);
-        }
-
-        if (this.eraserButton != null) {
-            this.eraserButton.setOnClickListener(this);
-        }
-
-        if (this.undoButton != null) {
-            this.undoButton.setOnClickListener(this);
-        }
-
-        if (this.redoButton != null) {
-            this.redoButton.setOnClickListener(this);
-        }
-
-        if (this.zoomButton != null) {
-            this.zoomButton.setOnClickListener(this);
-        }
-
-        final SpenPageDoc pageDoc = this.noteDoc.getPage(this.currentPage);
-
-        if (this.undoButton != null) {
-            this.undoButton.setEnabled(pageDoc.isUndoable());
-        }
-
-        if (this.redoButton != null) {
-            this.redoButton.setEnabled(pageDoc.isRedoable());
-        }
-
-        pageDoc.setHistoryListener(this);
-
-        this.selectButton(PenService.BUTTON_PEN);
+        return false;
     }
 
-    private void initSpen() {
+    private boolean initSpen() {
         final Spen spen = new Spen();
 
         try {
             spen.initialize(this.activity);
 
             this.penEnabled = spen.isFeatureEnabled(Spen.DEVICE_PEN);
+
+            return true;
         } catch (final SsdkUnsupportedException e) {
+            Log.i(this.getClass().getName(), e.getMessage(), e);
+
             this.handleUnsupportedException(e);
         } catch (final Exception e) {
             Toast.makeText(this.activity, R.string.message_spen_not_initialized, Toast.LENGTH_SHORT).show();
 
             this.activity.finish();
         }
+
+        return false;
     }
 
     private void initCanvas(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode) {
