@@ -1063,19 +1063,14 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
      */
     public boolean init(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode, final int penColor, final int penSize, final int eraserSize) {
         if (this.initSpen()) {
-            final ViewGroup      container = (ViewGroup)this.rootLayout.findViewById(R.id.pen_container);
-            final RelativeLayout canvas    = (RelativeLayout)this.rootLayout.findViewById(R.id.pen_canvas);
+            final RelativeLayout canvas = (RelativeLayout)this.rootLayout.findViewById(R.id.pen_canvas);
 
             if (this.penSettingEnabled) {
                 this.penSetting = new SpenSettingPenLayout(this.activity, PenService.NULL, canvas);
-
-                container.addView(this.penSetting);
             }
 
             if (this.eraserSettingEnabled) {
                 this.eraserSetting = new SpenSettingEraserLayout(this.activity, PenService.NULL, canvas);
-
-                container.addView(this.eraserSetting);
             }
 
             this.initCanvas(canvasWidth, canvasHeight, backgroundColor, backgroundImagePath, backgroundImageMode);
@@ -1123,6 +1118,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             pageDoc.setHistoryListener(this);
 
             this.selectButton(PenService.BUTTON_PEN);
+            this.onPenSettingClick();
 
             return true;
         }
@@ -1153,7 +1149,8 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
     }
 
     private void initCanvas(final int canvasWidth, final int canvasHeight, final int backgroundColor, final String backgroundImagePath, final int backgroundImageMode) {
-        final ViewGroup canvas = (ViewGroup)this.rootLayout.findViewById(R.id.pen_canvas);
+        final ViewGroup canvas    = (ViewGroup)this.rootLayout.findViewById(R.id.pen_canvas);
+        final ViewGroup container = (ViewGroup)this.rootLayout.findViewById(R.id.pen_container);
 
         this.canvasWidth = canvasWidth;
         this.surfaceView = new SpenSurfaceView(this.activity);
@@ -1200,6 +1197,16 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
 
                 Toast.makeText(this.activity, R.string.message_finger_only, Toast.LENGTH_SHORT).show();
             }
+        }
+
+        if (this.penSettingEnabled) {
+            container.addView(this.penSetting);
+            this.penSetting.setCanvasView(this.surfaceView);
+        }
+
+        if (this.eraserSettingEnabled) {
+            container.addView(this.eraserSetting);
+            this.eraserSetting.setCanvasView(this.surfaceView);
         }
 
         this.surfaceView.setReplayListener(this);
