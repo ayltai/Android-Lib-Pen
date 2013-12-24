@@ -241,12 +241,6 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
 
         if (this.noteDoc != null) {
             try {
-                this.noteDoc.discard();
-            } catch (final IOException e) {
-                Log.e(this.getClass().getName(), e.getMessage(), e);
-            }
-
-            try {
                 this.noteDoc.close();
             } catch (final IOException e) {
                 Log.e(this.getClass().getName(), e.getMessage(), e);
@@ -411,7 +405,11 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             return this.dirty;
         }
 
-        return this.dirty && this.noteDoc.isChanged();
+        if (this.noteDoc.isChanged()) {
+            return true;
+        }
+
+        return this.dirty;
     }
 
     /**
@@ -1009,8 +1007,15 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         if (this.noteDoc.getPageCount() > 0) {
             this.currentPage = 0;
 
-            this.surfaceView.setPageDoc(this.noteDoc.getPage(0), true);
+            final SpenPageDoc page = this.noteDoc.getPage(0);
+            page.setHistoryListener(this);
+
+            this.surfaceView.setPageDoc(page, true);
             this.surfaceView.update();
+        }
+
+        if (this.noteDoc.getPageCount() > 1) {
+            this.noteDoc.getPage(1).setHistoryListener(this);
         }
     }
 
@@ -1028,7 +1033,7 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
             throw new IllegalStateException();
         }
 
-        final SpenNoteDoc noteDoc = new SpenNoteDoc(this.activity, path, password, this.canvasWidth, writable ? SpenNoteDoc.MODE_WRITABLE : SpenNoteDoc.MODE_READ_ONLY);
+        final SpenNoteDoc noteDoc = new SpenNoteDoc(this.activity, path, password, this.canvasWidth, writable ? SpenNoteDoc.MODE_WRITABLE : SpenNoteDoc.MODE_READ_ONLY, !writable);
 
         if (this.noteDoc != null) {
             this.noteDoc.close();
@@ -1039,8 +1044,15 @@ public class PenService implements View.OnClickListener, SpenColorPickerListener
         if (this.noteDoc.getPageCount() > 0) {
             this.currentPage = 0;
 
-            this.surfaceView.setPageDoc(this.noteDoc.getPage(0), true);
+            final SpenPageDoc page = this.noteDoc.getPage(0);
+            page.setHistoryListener(this);
+
+            this.surfaceView.setPageDoc(page, true);
             this.surfaceView.update();
+        }
+
+        if (this.noteDoc.getPageCount() > 1) {
+            this.noteDoc.getPage(1).setHistoryListener(this);
         }
     }
 
