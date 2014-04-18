@@ -2,9 +2,9 @@ Samsung S-Pen SDK wrapper library
 ===============================
 A Samsung S-Pen library for Android that handles most of the common use cases with a single class only with much reduced complexity compared with Samsung SDK Pen package.
 
-<img src="https://github.com/ayltai/Android-Lib-Pen/demo/screenshot" width="180" height="320" />
+<img src="https://github.com/ayltai/Android-Lib-Pen/blob/master/demo/screenshot.png?raw=true" width="287" height="499" />
 
-Features
+Supported features
 --------
 * Pen of various styles, colors and adjustable size
 * Eraser of adjustable size
@@ -20,7 +20,7 @@ Features
 * Supported events: `onTouch`, `onReplayCompleted`, `onPageUpdated`, `onCommit`, `undo`, `redo`
 * Draw using S-Pen or finger
 
-Getting Started
+Getting started
 ---------------
 Your target users will need to install the S-Pen SDK package before they can use any Pen features. In the official sample code, the user will be redirected to Google Play Store to download the SDK package developed by Samsung. This library handles this for you and prompt the user for any necessary action.
 
@@ -71,3 +71,34 @@ This demo shows you how to:
 * Update thumbnail instantly
 * Undo, redo
 * Save any changes
+
+Supported devices
+-----------------
+Samsung does not specify which devices are supported. Currently this library has been tested on:
+
+* Galaxy S5
+* Galaxy S4
+* Galaxy S3
+* Galaxy S2
+* Galaxy Note 3
+* Galaxy Note 3 Neo
+* Galaxy Note 2
+* Galaxy Note 10.1 (2014 Edition)
+* Galaxy NotePro 12.2
+* Galaxy Camera
+* Galaxy NX
+* Galaxy Mega 6.3
+* Galaxy Nexus
+* Galaxy Premier
+* Galaxy J
+* Galaxy Grand 2
+* Galaxy Round
+* Galaxy TabPro 8.4
+* Galaxy TabPro 10.1
+* Galaxy TabPro 12.2
+
+Limitation
+----------
+
+* Minimum canvas size is 480 x 800
+* The canvas size you initialize `PenService` with cannot be changed later
