@@ -1,0 +1,28 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="android.lib.pen.demo"
+    android:versionCode="1"
+    android:versionName="1.0">
+    <!-- Pen SDK requires a minimum Android SDK version of 14 -->
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="19"/>
+    <!-- Pen SDK requires WRITE_EXTERNAL_STORAGE permission -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <application
+        android:label="@string/app_name"
+        android:icon="@drawable/ic_launcher"
+        android:theme="@android:style/Theme.Holo">
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".DrawingActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"
+            android:screenOrientation="portrait" />
+    </application>
+</manifest>

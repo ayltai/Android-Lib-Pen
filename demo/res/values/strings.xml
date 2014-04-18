@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Pen Demo</string>
+    <string name="create">New drawing</string>
+    <string name="wait">Processing...</string>
+    <string name="save">Save</string>
+    <string name="message_spd_not_found">The specified .spd file does not exist</string>
+    <string name="message_spd_locked">The specified .spd file is password-protected</string>
+    <string name="message_spd_unsupported">The specified .spd file is not supported</string>
+    <string name="message_saved">Saved</string>
+    <string name="message_save_error">Failed to save your drawing</string>
+    <string name="dialog_unsaved">Unsaved changes</string>
+    <string name="dialog_unsaved_message">You have made changes to this drawing. Would you like to save it?</string>
+</resources>

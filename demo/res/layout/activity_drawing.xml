@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".DrawingActivity">
+    <!-- A FrameLayout is necessary to host the tools (pen, eraser, undo, redo, etc.) layout -->
+    <!-- To use this library, name it @id/pen_container -->
+    <FrameLayout
+        android:id="@id/pen_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!-- Pen SDK requires a RelativeLayout to work on -->
+        <!-- To use this library, name if @id/pen_canvas -->
+        <RelativeLayout
+            android:id="@id/pen_canvas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+    <LinearLayout
+        android:id="@+id/tools_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/tools_background"
+        android:orientation="horizontal">
+        <!-- Provides a handle for the user to drag the tools layout around -->
+        <ImageView
+            android:id="@+id/drag_tools"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:layout_margin="4dp"
+            android:layout_gravity="top"
+            android:src="@drawable/drag_handle" />
+        <!-- Includes the pre-defined tools (pen, eraser, undo, redo, etc.) -->
+        <include
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/pen_buttons" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/preview_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="250dp"
+        android:layout_y="250dp"
+        android:background="@color/tools_background"
+        android:orientation="horizontal">
+        <!-- Provides a handle for the user to drag the thumbnail around -->
+        <ImageView
+            android:id="@+id/drag_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:layout_margin="4dp"
+            android:layout_gravity="top"
+            android:src="@drawable/drag_handle" />
+        <!-- Thumbnail of the drawing -->
+        <ImageView
+            android:id="@+id/preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@color/tools_background"
+            android:scaleType="centerInside" />
+    </LinearLayout>
+</FrameLayout>
